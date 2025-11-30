@@ -1,0 +1,168 @@
+---
+title: "Authentication"
+description: "How authentication works in SentinelX404"
+---
+
+## Overview
+
+SentinelX404 uses a challenge-response authentication system where users sign a challenge with their Solana wallet to prove ownership.
+
+## Authentication Flow
+
+### Step 1: Request Nonce
+
+Make a GET request to any endpoint without authentication headers:
+
+```http
+GET /x404_auth/blacklist
+```
+
+The server responds with:
+
+```http
+HTTP/1.1 200 OK
+X-404-Nonce: abc123def456
+X-404-Mechanism: SENTINEL404
+```
+
+### Step 2: Build Challenge Payload
+
+Construct the challenge payload:
+
+```typescript
+const payload = `CHALLENGE::${nonce}::${path}::${feature}`;
+// Example: "CHALLENGE::abc123def456::/x404_auth/blacklist::SENTINEL404_BLACKLIST"
+```
+
+Where:
+- `nonce`: The nonce from the `X-404-Nonce` header
+- `path`: The API path (e.g., `/x404_auth/blacklist`)
+- `feature`: The feature constant (e.g., `SENTINEL404_BLACKLIST`)
+
+### Step 3: Sign with Wallet
+
+Sign the payload using the user's Solana wallet:
+
+```typescript
+const message = new TextEncoder().encode(payload);
+const { signature } = await wallet.signMessage(message);
+const signatureBase58 = bs58.encode(signature);
+```
+
+### Step 4: Send Authenticated Request
+
+Send the request with authentication headers:
+
+```http
+GET /x404_auth/blacklist
+X-404-Nonce: abc123def456
+X-404-Signature: 5KJvsngHeM... (base58-encoded signature)
+X-404-Addr: 7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU
+X-404-Feature: blacklist
+excluded_mints: ["token_address"]
+max_holdings: {}
+```
+
+### Step 5: Receive JWT Token
+
+On success, the server returns a JWT token:
+
+```json
+{
+  "success": true,
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "publicKey": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+  "feature": "blacklist"
+}
+```
+
+## Re-authentication
+
+For subsequent requests, you can use the JWT token instead of signing again:
+
+```http
+GET /x404_auth/blacklist
+x-jwt: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+The server will verify the JWT and return success if valid.
+
+## Implementation Example
+
+Here's a complete example using the client library:
+
+```typescript
+import { X404Blacklist } from "sentinelx404/blacklist";
+
+// The library handles all authentication steps automatically
+const result = await X404Blacklist({
+  excluded_mints: ["token_address"],
+  max_holdings: {},
+  geo_code: "false",
+  geo_code_locs: "",
+  coords: { latitude: null, longitude: null },
+});
+
+if (result.success) {
+  // Token is automatically stored in localStorage
+  console.log("Token:", result.token);
+}
+```
+
+## Manual Implementation
+
+If implementing manually:
+
+```typescript
+// 1. Get nonce
+const nonceResponse = await fetch("https://sentinelx404.onrender.com/x404_auth/blacklist");
+const nonce = nonceResponse.headers.get("X-404-Nonce");
+
+// 2. Build payload
+const path = "/x404_auth/blacklist";
+const feature = "SENTINEL404_BLACKLIST";
+const payload = `CHALLENGE::${nonce}::${path}::${feature}`;
+
+// 3. Sign
+const message = new TextEncoder().encode(payload);
+const { signature, publicKey } = await wallet.signMessage(message);
+const signatureBase58 = bs58.encode(signature);
+
+// 4. Send authenticated request
+const response = await fetch("https://sentinelx404.onrender.com/x404_auth/blacklist", {
+  headers: {
+    "X-404-Nonce": nonce,
+    "X-404-Signature": signatureBase58,
+    "X-404-Addr": publicKey.toString(),
+    "X-404-Feature": "blacklist",
+    "excluded_mints": JSON.stringify(["token_address"]),
+    "max_holdings": JSON.stringify({}),
+  },
+});
+
+const data = await response.json();
+```
+
+## Security Considerations
+
+1. **Nonce Expiration**: Nonces expire after a short period (typically 5 minutes)
+2. **Signature Verification**: Server verifies the signature matches the public key
+3. **JWT Expiration**: JWT tokens have expiration times (typically 30 days)
+4. **Replay Protection**: Nonces can only be used once
+
+## Error Handling
+
+Common authentication errors:
+
+<ErrorField name="NONCE_ERROR">
+  Failed to get nonce from server
+</ErrorField>
+
+<ErrorField name="SIGNING_ERROR">
+  Failed to sign the challenge payload
+</ErrorField>
+
+<ErrorField name="INVALID_SIGNATURE">
+  Signature verification failed
+</ErrorField>
+

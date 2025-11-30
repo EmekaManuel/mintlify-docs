@@ -1,0 +1,229 @@
+---
+title: "Next.js Setup"
+description: "Configure Next.js to work with SentinelX404"
+---
+
+## Overview
+
+SentinelX404 publishes TypeScript source files, which requires Next.js to be configured to transpile the package.
+
+## Quick Setup
+
+Add this to your `next.config.js` or `next.config.mjs`:
+
+<CodeGroup>
+```javascript next.config.js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  transpilePackages: ["sentinelx404"],
+};
+
+export default nextConfig;
+```
+
+```javascript next.config.mjs
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  transpilePackages: ["sentinelx404"],
+};
+
+export default nextConfig;
+```
+</CodeGroup>
+
+## Next.js 13+ (App Router)
+
+The above configuration works for Next.js 13+ with the App Router. No additional setup needed.
+
+## Next.js 12 (Pages Router)
+
+For Next.js 12, use this webpack configuration:
+
+```javascript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  webpack: (config) => {
+    config.resolve.extensionAlias = {
+      ".js": [".ts", ".tsx", ".js", ".jsx"],
+      ".jsx": [".tsx", ".jsx"],
+    };
+    return config;
+  },
+};
+
+module.exports = nextConfig;
+```
+
+## TypeScript Configuration
+
+Make sure your `tsconfig.json` includes the package:
+
+```json
+{
+  "compilerOptions": {
+    // ... your config
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "node_modules/sentinelx404/**/*"
+  ]
+}
+```
+
+## Verification
+
+After configuration:
+
+1. **Restart your Next.js dev server:**
+   ```bash
+   npm run dev
+   ```
+
+2. **Test the import:**
+   ```typescript
+   import { X404Blacklist } from "sentinelx404/blacklist";
+   ```
+
+3. **If you see errors, clear the cache:**
+   ```bash
+   rm -rf .next
+   npm run dev
+   ```
+
+## Using in Client Components
+
+Since SentinelX404 uses browser APIs (wallet connections, localStorage), you must use it in Client Components:
+
+```typescript
+"use client";
+
+import { X404Blacklist } from "sentinelx404/blacklist";
+
+export function AuthComponent() {
+  // Your component code
+}
+```
+
+<Warning>
+The `"use client"` directive is required when using SentinelX404 features in Next.js App Router components.
+</Warning>
+
+## Using in Server Components
+
+You cannot directly use SentinelX404 features in Server Components since they require browser APIs. However, you can:
+
+1. Create a Client Component wrapper
+2. Use the Client Component in your Server Component
+
+```typescript
+// app/page.tsx (Server Component)
+import { AuthButton } from "./components/AuthButton";
+
+export default function Page() {
+  return <AuthButton />;
+}
+```
+
+```typescript
+// components/AuthButton.tsx (Client Component)
+"use client";
+
+import { X404Blacklist } from "sentinelx404/blacklist";
+
+export function AuthButton() {
+  // Your authentication logic
+}
+```
+
+## Troubleshooting
+
+### "Module not found" errors
+
+1. **Verify `transpilePackages` is configured:**
+   ```javascript
+   transpilePackages: ["sentinelx404"]
+   ```
+
+2. **Restart the dev server:**
+   ```bash
+   # Stop the server (Ctrl+C)
+   npm run dev
+   ```
+
+3. **Clear Next.js cache:**
+   ```bash
+   rm -rf .next
+   ```
+
+4. **Reinstall the package:**
+   ```bash
+   rm -rf node_modules/sentinelx404
+   npm install
+   ```
+
+### Type errors
+
+1. **Check `tsconfig.json` includes the package:**
+   ```json
+   {
+     "include": ["node_modules/sentinelx404/**/*"]
+   }
+   ```
+
+2. **Verify TypeScript can find types:**
+   ```typescript
+   import type { X404AuthResult } from "sentinelx404";
+   ```
+
+### Build errors
+
+1. **Update Next.js to latest version:**
+   ```bash
+   npm install next@latest
+   ```
+
+2. **Ensure TypeScript version is compatible:**
+   ```bash
+   npm install typescript@latest
+   ```
+
+## Alternative: next-transpile-modules (Legacy)
+
+If the above doesn't work, you can use `next-transpile-modules`:
+
+```bash
+npm install --save-dev next-transpile-modules
+```
+
+```javascript
+const withTM = require("next-transpile-modules")(["sentinelx404"]);
+
+module.exports = withTM({
+  // your other Next.js config
+});
+```
+
+<Note>
+This is a legacy approach. The `transpilePackages` option is preferred for Next.js 13+.
+</Note>
+
+## Next Steps
+
+<Card
+  title="Quick Start"
+  icon="rocket"
+  href="/quickstart"
+>
+  Start using SentinelX404 in your Next.js app
+</Card>
+
+<Card
+  title="Features"
+  icon="list"
+  href="/features/blacklist"
+>
+  Explore available authentication features
+</Card>
+

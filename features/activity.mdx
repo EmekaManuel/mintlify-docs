@@ -1,0 +1,83 @@
+---
+title: "x404-Activity"
+description: "Transaction history verification"
+---
+
+## Overview
+
+The **x404-Activity** feature verifies that a user has sufficient transaction history and trading volume. This is useful for filtering out inactive wallets or ensuring users are active traders.
+
+## Import
+
+```typescript
+import { X404Activity } from "sentinelx404/activity";
+```
+
+## Usage
+
+```typescript
+import { X404Activity } from "sentinelx404/activity";
+
+const result = await X404Activity({
+  min_transactions: 5, // Minimum 5 transactions
+  min_volume: "1000", // Minimum $1000 volume
+  time_period_days: 30, // Within last 30 days
+  transaction_types: ["swap", "transfer"], // Types to count
+  geo_code: "false",
+  geo_code_locs: "",
+  coords: { latitude: null, longitude: null },
+});
+
+if (result.success) {
+  console.log("Authenticated! Token:", result.token);
+}
+```
+
+## Configuration
+
+<ParamField body="min_transactions" type="number" required>
+  Minimum number of transactions required
+</ParamField>
+
+<ParamField body="min_volume" type="string" required>
+  Minimum trading volume required (as string)
+</ParamField>
+
+<ParamField body="time_period_days" type="number" required>
+  Time period in days to check (e.g., 30 for last 30 days)
+</ParamField>
+
+<ParamField body="transaction_types" type="string[]" required>
+  Array of transaction types to count (e.g., `["swap", "transfer"]`)
+</ParamField>
+
+## Error Types
+
+<ErrorField name="INSUFFICIENT_ACTIVITY">
+  User doesn't meet the minimum transaction count or volume requirements
+</ErrorField>
+
+## Example
+
+```typescript
+"use client";
+
+import { X404Activity } from "sentinelx404/activity";
+
+export async function verifyActiveTrader() {
+  const result = await X404Activity({
+    min_transactions: 10,
+    min_volume: "5000", // $5000 minimum volume
+    time_period_days: 60, // Last 60 days
+    transaction_types: ["swap", "transfer", "trade"],
+    geo_code: "false",
+    geo_code_locs: "",
+    coords: { latitude: null, longitude: null },
+  });
+
+  if (result.success) {
+    console.log("User is an active trader!");
+  }
+}
+```
+

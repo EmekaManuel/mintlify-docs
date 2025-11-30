@@ -1,0 +1,205 @@
+---
+title: "x404-Blacklist"
+description: "Exclusion-based authentication - verify user does NOT hold banned tokens"
+---
+
+## Overview
+
+The **x404-Blacklist** feature verifies that a user does NOT hold any tokens from a blacklist of excluded token addresses. This is useful for preventing access from users who hold scam tokens, competitor tokens, or other unwanted assets.
+
+## Import
+
+```typescript
+import { X404Blacklist } from "sentinelx404/blacklist";
+```
+
+## Usage
+
+```typescript
+import { X404Blacklist } from "sentinelx404/blacklist";
+import { getGeolocationData } from "sentinelx404/utils";
+import type { X404BlacklistConfig } from "sentinelx404";
+
+const location = await getGeolocationData();
+
+const result = await X404Blacklist({
+  // wallet is optional - modal will show if not provided
+  excluded_mints: ["scam_token_1_address", "scam_token_2_address"],
+  max_holdings: {
+    competitor_token: "0", // Must not hold any
+  },
+  geo_code: "false",
+  geo_code_locs: "",
+  coords: {
+    latitude: location.latitude,
+    longitude: location.longitude,
+  },
+});
+
+if (result.success) {
+  console.log("Authenticated! Token:", result.token);
+  // Token stored in localStorage as "sjwt404_blacklist"
+} else {
+  console.error("Error:", result.error, result.message);
+}
+```
+
+## Configuration
+
+<ParamField body="excluded_mints" type="string[]" required>
+  Array of token mint addresses that the user must NOT hold. If the user holds any of these tokens, authentication will fail.
+</ParamField>
+
+<ParamField body="max_holdings" type="Record<string, string>" required>
+  Object mapping token mint addresses to maximum allowed holdings. Keys are mint addresses, values are maximum amounts as strings.
+  
+  Example: `{ "token_address": "1000" }` means user can hold at most 1000 of that token.
+</ParamField>
+
+<ParamField body="wallet" type="string" required={false}>
+  Optional wallet name. If not provided, a modal will automatically appear for wallet selection.
+  
+  Supported wallets: `"phantom"`, `"solflare"`, `"backpack"`
+</ParamField>
+
+<ParamField body="geo_code" type="string" required>
+  Geolocation code setting. Set to `"true"` to enable geolocation checks, `"false"` to disable.
+</ParamField>
+
+<ParamField body="geo_code_locs" type="string" required>
+  Country code for geolocation filtering. Empty string if not using geolocation.
+</ParamField>
+
+<ParamField body="coords" type="{ latitude: number | null, longitude: number | null }" required>
+  User's coordinates. Use `getGeolocationData()` from utilities to get this.
+</ParamField>
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Whether authentication was successful
+</ResponseField>
+
+<ResponseField name="token" type="string">
+  JWT token (if successful). Stored in localStorage as `sjwt404_blacklist`
+</ResponseField>
+
+<ResponseField name="alreadyAuthenticated" type="boolean">
+  Whether user was already authenticated (token exists in localStorage)
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Error type if authentication failed
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Human-readable error message
+</ResponseField>
+
+## Error Types
+
+<ErrorField name="HOLDS_BANNED_TOKEN">
+  User holds one or more tokens from the excluded_mints list
+</ErrorField>
+
+<ErrorField name="EXCEEDS_MAX_HOLDING">
+  User exceeds the maximum allowed holding for one or more tokens
+</ErrorField>
+
+<ErrorField name="LOCATION_DENIED">
+  Access denied for user's location (if geolocation is enabled)
+</ErrorField>
+
+<ResponseField name="LOCATION_ERROR">
+  Error accessing user's geolocation
+</ResponseField>
+
+<ErrorField name="WALLET_CANCELLED">
+  User cancelled wallet selection
+</ErrorField>
+
+<ErrorField name="NONCE_ERROR">
+  Failed to get nonce from server
+</ErrorField>
+
+## Example: React Component
+
+```typescript
+"use client";
+
+import { useState } from "react";
+import { X404Blacklist } from "sentinelx404/blacklist";
+import { getGeolocationData } from "sentinelx404/utils";
+import type { X404AuthResult } from "sentinelx404";
+
+export function BlacklistAuth() {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<X404AuthResult | null>(null);
+
+  const handleAuth = async () => {
+    setLoading(true);
+    try {
+      const location = await getGeolocationData();
+      
+      const authResult = await X404Blacklist({
+        excluded_mints: [
+          "So11111111111111111111111111111111111112", // Wrapped SOL (example)
+        ],
+        max_holdings: {},
+        geo_code: "false",
+        geo_code_locs: "",
+        coords: {
+          latitude: location.latitude,
+          longitude: location.longitude,
+        },
+      });
+
+      setResult(authResult);
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={handleAuth} disabled={loading}>
+        {loading ? "Authenticating..." : "Authenticate with Blacklist"}
+      </button>
+      {result && (
+        <div>
+          {result.success ? (
+            <p>✅ Authenticated! Token: {result.token}</p>
+          ) : (
+            <p>❌ Error: {result.error} - {result.message}</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Token Storage
+
+The authentication token is automatically stored in `localStorage` with the key `sjwt404_blacklist`. On subsequent authentication attempts, if a valid token exists, the function will return immediately with `alreadyAuthenticated: true`.
+
+## Next Steps
+
+<Card
+  title="View Other Features"
+  icon="list"
+  href="/features/timelock"
+>
+  Explore other authentication features
+</Card>
+
+<Card
+  title="API Reference"
+  icon="book"
+  href="/api-reference/endpoints/blacklist"
+>
+  View complete API documentation
+</Card>
+

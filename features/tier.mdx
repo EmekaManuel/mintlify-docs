@@ -1,0 +1,105 @@
+---
+title: "x404-Tier"
+description: "Tiered access levels based on token holdings"
+---
+
+## Overview
+
+The **x404-Tier** feature provides tiered access levels (Bronze, Silver, Gold) based on token holdings. Users are assigned to the highest tier they qualify for.
+
+## Import
+
+```typescript
+import { X404Tier } from "sentinelx404/tier";
+```
+
+## Usage
+
+```typescript
+import { X404Tier } from "sentinelx404/tier";
+
+const result = await X404Tier({
+  tier_config: {
+    bronze: { mint: "TOKEN", amount: "1000" },
+    silver: { mint: "TOKEN", amount: "10000" },
+    gold: { mint: "TOKEN", amount: "100000" },
+  },
+  geo_code: "false",
+  geo_code_locs: "",
+  coords: { latitude: null, longitude: null },
+});
+
+if (result.success) {
+  console.log("Tier:", result.tier); // "bronze", "silver", or "gold"
+  console.log("Token:", result.token);
+}
+```
+
+## Configuration
+
+<ParamField body="tier_config" type="object" required>
+  Configuration object with bronze, silver, and gold tier requirements:
+  
+  ```typescript
+  {
+    bronze?: { mint: string, amount: string },
+    silver?: { mint: string, amount: string },
+    gold?: { mint: string, amount: string }
+  }
+  ```
+  
+  Each tier requires a token mint address and minimum amount. Users qualify for the highest tier they meet.
+</ParamField>
+
+## Response
+
+The response includes a `tier` field indicating the user's tier:
+
+<ResponseField name="tier" type="'bronze' | 'silver' | 'gold'">
+  The highest tier the user qualifies for
+</ResponseField>
+
+## Example
+
+```typescript
+"use client";
+
+import { X404Tier } from "sentinelx404/tier";
+
+export async function checkUserTier() {
+  const result = await X404Tier({
+    tier_config: {
+      bronze: { 
+        mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", 
+        amount: "1000000" // 1 USDC
+      },
+      silver: { 
+        mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", 
+        amount: "10000000" // 10 USDC
+      },
+      gold: { 
+        mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", 
+        amount: "100000000" // 100 USDC
+      },
+    },
+    geo_code: "false",
+    geo_code_locs: "",
+    coords: { latitude: null, longitude: null },
+  });
+
+  if (result.success) {
+    switch (result.tier) {
+      case "gold":
+        console.log("Premium access!");
+        break;
+      case "silver":
+        console.log("Standard access");
+        break;
+      case "bronze":
+        console.log("Basic access");
+        break;
+    }
+  }
+}
+```
+

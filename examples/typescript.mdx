@@ -1,0 +1,100 @@
+---
+title: "TypeScript Examples"
+description: "TypeScript usage examples for SentinelX404"
+---
+
+## Basic Usage with Types
+
+```typescript
+import { X404Blacklist } from "sentinelx404/blacklist";
+import type { X404BlacklistConfig, X404AuthResult } from "sentinelx404";
+
+const config: X404BlacklistConfig = {
+  excluded_mints: ["scam_token_address"],
+  max_holdings: {},
+  geo_code: "false",
+  geo_code_locs: "",
+  coords: { latitude: null, longitude: null },
+};
+
+const result: X404AuthResult = await X404Blacklist(config);
+
+if (result.success) {
+  console.log("Token:", result.token);
+} else {
+  console.error("Error:", result.error);
+}
+```
+
+## Type-Safe Error Handling
+
+```typescript
+import { X404Blacklist } from "sentinelx404/blacklist";
+import type { X404AuthResult } from "sentinelx404";
+
+async function authenticate(): Promise<void> {
+  const result: X404AuthResult = await X404Blacklist({
+    excluded_mints: ["token_address"],
+    max_holdings: {},
+    geo_code: "false",
+    geo_code_locs: "",
+    coords: { latitude: null, longitude: null },
+  });
+
+  if (!result.success) {
+    switch (result.error) {
+      case "HOLDS_BANNED_TOKEN":
+        console.error("User holds banned token");
+        break;
+      case "EXCEEDS_MAX_HOLDING":
+        console.error("User exceeds max holding");
+        break;
+      case "WALLET_CANCELLED":
+        console.error("User cancelled wallet selection");
+        break;
+      default:
+        console.error("Unknown error:", result.error);
+    }
+    return;
+  }
+
+  // TypeScript knows result.token exists here
+  console.log("Authenticated! Token:", result.token);
+}
+```
+
+## Multiple Features with Union Types
+
+```typescript
+import {
+  X404Blacklist,
+  X404TimeLock,
+  X404Tier,
+} from "sentinelx404";
+import type {
+  X404BlacklistConfig,
+  X404TimeLockConfig,
+  X404TierConfig,
+  X404AuthResult,
+} from "sentinelx404";
+
+type AuthConfig =
+  | X404BlacklistConfig
+  | X404TimeLockConfig
+  | X404TierConfig;
+
+async function authenticate(
+  feature: "blacklist" | "timelock" | "tier",
+  config: AuthConfig
+): Promise<X404AuthResult> {
+  switch (feature) {
+    case "blacklist":
+      return await X404Blacklist(config as X404BlacklistConfig);
+    case "timelock":
+      return await X404TimeLock(config as X404TimeLockConfig);
+    case "tier":
+      return await X404Tier(config as X404TierConfig);
+  }
+}
+```
+

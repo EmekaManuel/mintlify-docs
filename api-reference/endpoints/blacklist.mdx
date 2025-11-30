@@ -1,0 +1,146 @@
+---
+title: "Blacklist Endpoint"
+description: "Exclusion-based authentication API endpoint"
+api: "GET /x404_auth/blacklist"
+---
+
+## Endpoint
+
+<Endpoint method="get" path="/x404_auth/blacklist" />
+
+## Description
+
+Verifies that a user does NOT hold any tokens from a blacklist of excluded token addresses. This endpoint checks wallet balances and ensures the user doesn't hold banned tokens or exceed maximum holdings.
+
+## Request
+
+### Headers
+
+<ParamField header="X-404-Nonce" type="string" required>
+  Nonce received from initial request
+</ParamField>
+
+<ParamField header="X-404-Signature" type="string" required>
+  Base58-encoded signature of the challenge payload
+</ParamField>
+
+<ParamField header="X-404-Addr" type="string" required>
+  User's Solana public key
+</ParamField>
+
+<ParamField header="X-404-Feature" type="string" required>
+  Must be `"blacklist"`
+</ParamField>
+
+<ParamField header="excluded_mints" type="string" required>
+  JSON array of token mint addresses to exclude (e.g., `["token1", "token2"]`)
+</ParamField>
+
+<ParamField header="max_holdings" type="string" required>
+  JSON object mapping mint addresses to maximum allowed holdings (e.g., `{"token1": "1000"}`)
+</ParamField>
+
+<ParamField header="X-Lat" type="string" required={false}>
+  User's latitude (if geolocation enabled)
+</ParamField>
+
+<ParamField header="X-Long" type="string" required={false}>
+  User's longitude (if geolocation enabled)
+</ParamField>
+
+<ParamField header="geo_code" type="string" required>
+  `"true"` or `"false"` to enable/disable geolocation checks
+</ParamField>
+
+<ParamField header="geo_code_locs" type="string" required>
+  Country code for geolocation filtering (empty string if not used)
+</ParamField>
+
+<ParamField header="x-jwt" type="string" required={false}>
+  JWT token from previous authentication (for re-authentication)
+</ParamField>
+
+## Response
+
+### Success (200)
+
+```json
+{
+  "success": true,
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "publicKey": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+  "feature": "blacklist"
+}
+```
+
+### Error Responses
+
+#### 401 - Location Denied
+
+```json
+{
+  "status": "locdeny",
+  "message": "Access denied for your location"
+}
+```
+
+#### 403 - Exceeds Max Holding
+
+```json
+{
+  "error": "EXCEEDS_MAX_HOLDING",
+  "message": "Wallet exceeds maximum holding for token_address. Current: 5000, Max: 1000"
+}
+```
+
+#### 500 - Holds Banned Token
+
+```json
+{
+  "error": "HOLDS_BANNED_TOKEN",
+  "message": "Wallet holds excluded token: token_address"
+}
+```
+
+#### 500 - Location Error
+
+```json
+{
+  "status": "locerror",
+  "message": "Location access error"
+}
+```
+
+## Verification Logic
+
+1. Verify signature matches public key
+2. Check wallet does NOT hold any tokens in `excluded_mints`
+3. Check wallet does NOT exceed `max_holdings` for any token
+4. Verify geolocation (if enabled)
+5. Return JWT token if all checks pass
+
+## Example Request
+
+```bash
+curl -X GET "https://sentinelx404.onrender.com/x404_auth/blacklist" \
+  -H "X-404-Nonce: abc123def456" \
+  -H "X-404-Signature: 5KJvsngHeM..." \
+  -H "X-404-Addr: 7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU" \
+  -H "X-404-Feature: blacklist" \
+  -H "excluded_mints: [\"scam_token_1\", \"scam_token_2\"]" \
+  -H "max_holdings: {}" \
+  -H "geo_code: false" \
+  -H "geo_code_locs: "
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwdWJsaWNfa2V5IjoiN3hLWHRnMkNXODdkOTdUWEpTRHBiRDVqQmtoZVRxQTgzVFpSdUpvc2dBc1UiLCJmZWF0dXJlIjoiYmxhY2tsaXN0IiwiZXhwIjoxNzAwMDAwMDAwfQ.signature",
+  "publicKey": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+  "feature": "blacklist"
+}
+```
+

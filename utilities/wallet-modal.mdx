@@ -1,0 +1,90 @@
+---
+title: "Wallet Modal"
+description: "Automatic wallet selection modal"
+---
+
+## Overview
+
+SentinelX404 includes a beautiful, automatic wallet selection modal that appears when no wallet is specified in the configuration. You can also show it programmatically using `showWalletModal()`.
+
+## Automatic Modal
+
+The modal appears automatically when you don't specify a wallet:
+
+```typescript
+import { X404Blacklist } from "sentinelx404/blacklist";
+
+// No wallet specified - modal will appear automatically
+const result = await X404Blacklist({
+  excluded_mints: ["token_address"],
+  // wallet is not specified
+  // ... other config
+});
+```
+
+## Programmatic Modal
+
+Show the modal programmatically:
+
+```typescript
+import { showWalletModal } from "sentinelx404/utils";
+
+const selectedWallet = await showWalletModal();
+if (selectedWallet) {
+  console.log("User selected:", selectedWallet);
+} else {
+  console.log("User cancelled");
+}
+```
+
+## Modal Features
+
+The wallet modal includes:
+
+- ✨ Beautiful, modern UI with animations
+- 🌙 Dark mode support (automatic)
+- 📱 Responsive design
+- 🔍 Automatic wallet detection
+- ✅ Shows "Installed" badge for detected wallets
+- ❌ Handles no wallet found scenario
+- 🎨 Framework-agnostic (works with React, Vue, vanilla JS, etc.)
+
+## Example: Custom Wallet Selection
+
+```typescript
+"use client";
+
+import { showWalletModal } from "sentinelx404/utils";
+import { X404Blacklist } from "sentinelx404/blacklist";
+
+export async function customAuthFlow() {
+  // Show modal first
+  const wallet = await showWalletModal();
+  
+  if (!wallet) {
+    console.log("User cancelled wallet selection");
+    return;
+  }
+  
+  // Use selected wallet
+  const result = await X404Blacklist({
+    wallet: wallet, // Use the selected wallet
+    excluded_mints: ["token_address"],
+    max_holdings: {},
+    geo_code: "false",
+    geo_code_locs: "",
+    coords: { latitude: null, longitude: null },
+  });
+  
+  return result;
+}
+```
+
+## Modal Styling
+
+The modal automatically adapts to your site's theme and supports dark mode. It's designed to be unobtrusive and user-friendly.
+
+<Note>
+The modal is created dynamically and doesn't require any additional CSS or styling. It works out of the box.
+</Note>
+

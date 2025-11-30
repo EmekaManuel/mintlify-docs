@@ -1,0 +1,93 @@
+---
+title: "x404-TimeLock"
+description: "Time-based token holding verification"
+---
+
+## Overview
+
+The **x404-TimeLock** feature verifies that a user has held a specific token for a minimum duration. This is useful for ensuring users are long-term holders rather than short-term traders.
+
+## Import
+
+```typescript
+import { X404TimeLock } from "sentinelx404/timelock";
+```
+
+## Usage
+
+```typescript
+import { X404TimeLock } from "sentinelx404/timelock";
+
+const result = await X404TimeLock({
+  required_mint: "TOKEN_MINT_ADDRESS",
+  mint_amount: "100000", // Minimum amount required
+  min_hold_duration_days: 30, // Must hold for 30 days
+  geo_code: "false",
+  geo_code_locs: "",
+  coords: { latitude: null, longitude: null },
+});
+
+if (result.success) {
+  console.log("Authenticated! Token:", result.token);
+}
+```
+
+## Configuration
+
+<ParamField body="required_mint" type="string" required>
+  Token mint address that the user must hold
+</ParamField>
+
+<ParamField body="mint_amount" type="string" required>
+  Minimum amount of tokens required (as string to handle large numbers)
+</ParamField>
+
+<ParamField body="min_hold_duration_days" type="number" required>
+  Minimum number of days the tokens must have been held
+</ParamField>
+
+<ParamField body="wallet" type="string" required={false}>
+  Optional wallet name. If not provided, a modal will appear for wallet selection.
+</ParamField>
+
+<ParamField body="geo_code" type="string" required>
+  Geolocation code setting
+</ParamField>
+
+<ParamField body="geo_code_locs" type="string" required>
+  Country code for geolocation filtering
+</ParamField>
+
+<ParamField body="coords" type="{ latitude: number | null, longitude: number | null }" required>
+  User's coordinates
+</ParamField>
+
+## Error Types
+
+<ErrorField name="INSUFFICIENT_HOLD_DURATION">
+  User has not held the tokens for the minimum required duration
+</ErrorField>
+
+## Example
+
+```typescript
+"use client";
+
+import { X404TimeLock } from "sentinelx404/timelock";
+
+export async function verifyLongTermHolder() {
+  const result = await X404TimeLock({
+    required_mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", // USDC example
+    mint_amount: "1000000", // 1 USDC (6 decimals)
+    min_hold_duration_days: 90, // 90 days
+    geo_code: "false",
+    geo_code_locs: "",
+    coords: { latitude: null, longitude: null },
+  });
+
+  if (result.success) {
+    console.log("User is a long-term holder!");
+  }
+}
+```
+

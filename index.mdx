@@ -1,97 +1,141 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "SentinelX404 Documentation"
+description: "Modular authentication package for Solana wallets with advanced verification features"
 ---
 
-## Setting up
+## Welcome to SentinelX404
 
-Get your documentation site up and running in minutes.
+SentinelX404 is a powerful TypeScript package that provides modular authentication features for Solana wallets. Built with full type safety and an automatic wallet selection modal, it makes implementing token-gated access and wallet verification simple and secure.
 
 <Card
-  title="Start here"
+  title="Quick Start"
   icon="rocket"
   href="/quickstart"
   horizontal
 >
-  Follow our three step quickstart guide.
+  Get up and running in minutes with our quick start guide.
 </Card>
 
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
+## Key Features
 
 <Columns cols={2}>
   <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
+    title="7 Authentication Features"
+    icon="shield-check"
+    href="/features/blacklist"
   >
-    Edit your docs locally and preview them in real time.
+    Blacklist, TimeLock, MultiToken, Activity, Tier, NoDebt, and Age verification
   </Card>
   <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
+    title="Automatic Wallet Selection"
+    icon="wallet"
+    href="/utilities/wallet-modal"
   >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+    Beautiful modal automatically detects and lets users select their wallet
   </Card>
   <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
-
-## Create beautiful pages
-
-Everything you need to create world-class documentation.
-
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
+    title="TypeScript Support"
     icon="code"
-    href="/essentials/code"
+    href="/examples/typescript"
   >
-    Add sample code to demonstrate how to use your product.
+    Full type safety with comprehensive TypeScript definitions
   </Card>
   <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
+    title="Next.js Ready"
+    icon="nextjs"
+    href="/nextjs-setup"
   >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
+    Optimized for Next.js with easy setup and transpilation
   </Card>
 </Columns>
 
-## Need inspiration?
+## Installation
+
+Install the package using your preferred package manager:
+
+<CodeGroup>
+```bash npm
+npm install sentinelx404
+```
+
+```bash yarn
+yarn add sentinelx404
+```
+
+```bash bun
+bun add sentinelx404
+```
+
+```bash pnpm
+pnpm add sentinelx404
+```
+</CodeGroup>
+
+## Quick Example
+
+Here's a simple example of using the Blacklist feature:
+
+```typescript
+import { X404Blacklist } from "sentinelx404/blacklist";
+
+const result = await X404Blacklist({
+  excluded_mints: ["scam_token_address"],
+  max_holdings: {},
+  geo_code: "false",
+  geo_code_locs: "",
+  coords: { latitude: null, longitude: null },
+});
+
+if (result.success) {
+  console.log("Authenticated! Token:", result.token);
+} else {
+  console.error("Error:", result.error);
+}
+```
+
+## Features Overview
+
+SentinelX404 provides 7 different authentication features:
+
+1. **x404-Blacklist** - Verify user does NOT hold banned tokens
+2. **x404-TimeLock** - Verify user has held tokens for minimum duration
+3. **x404-MultiToken** - Verify user holds multiple tokens (portfolio-based)
+4. **x404-Activity** - Verify user has transaction history/activity
+5. **x404-Tier** - Different access levels based on token holdings
+6. **x404-NoDebt** - Verify user has NO outstanding debts/loans
+7. **x404-Age** - Verify wallet has been active for minimum time
 
 <Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
+  title="Explore Features"
+  icon="list"
+  href="/features/blacklist"
 >
-  Browse our showcase of exceptional documentation sites.
+  Learn about each feature in detail
+</Card>
+
+## What's Next?
+
+<Steps>
+  <Step title="Install the package">
+    Follow our <a href="/installation">installation guide</a> to get started
+  </Step>
+  <Step title="Set up Next.js">
+    If using Next.js, configure <a href="/nextjs-setup">transpilation</a>
+  </Step>
+  <Step title="Choose a feature">
+    Pick a feature from our <a href="/features/blacklist">features list</a> and implement it
+  </Step>
+  <Step title="Explore examples">
+    Check out our <a href="/examples/react">React examples</a> for implementation patterns
+  </Step>
+</Steps>
+
+## Need Help?
+
+<Card
+  title="View API Reference"
+  icon="book"
+  href="/api-reference/introduction"
+>
+  Complete API documentation with all endpoints and types
 </Card>

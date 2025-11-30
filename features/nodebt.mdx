@@ -1,0 +1,75 @@
+---
+title: "x404-NoDebt"
+description: "Negative balance verification"
+---
+
+## Overview
+
+The **x404-NoDebt** feature verifies that a user has no outstanding debts or loans across specified DeFi protocols. This is useful for ensuring users have clean financial standing.
+
+## Import
+
+```typescript
+import { X404NoDebt } from "sentinelx404/nodebt";
+```
+
+## Usage
+
+```typescript
+import { X404NoDebt } from "sentinelx404/nodebt";
+
+const result = await X404NoDebt({
+  check_protocols: ["lending_protocol_1", "lending_protocol_2"],
+  max_debt_allowed: "0", // Must have zero debt
+  geo_code: "false",
+  geo_code_locs: "",
+  coords: { latitude: null, longitude: null },
+});
+
+if (result.success) {
+  console.log("Authenticated! Token:", result.token);
+}
+```
+
+## Configuration
+
+<ParamField body="check_protocols" type="string[]" required>
+  Array of protocol names to check for debt
+</ParamField>
+
+<ParamField body="max_debt_allowed" type="string" required>
+  Maximum debt allowed (usually "0" for no debt)
+</ParamField>
+
+## Error Types
+
+<ErrorField name="HAS_DEBT">
+  User has outstanding debts exceeding max_debt_allowed
+</ErrorField>
+
+## Example
+
+```typescript
+"use client";
+
+import { X404NoDebt } from "sentinelx404/nodebt";
+
+export async function verifyNoDebt() {
+  const result = await X404NoDebt({
+    check_protocols: [
+      "solend",
+      "mango",
+      "jupiter",
+    ],
+    max_debt_allowed: "0", // Zero debt required
+    geo_code: "false",
+    geo_code_locs: "",
+    coords: { latitude: null, longitude: null },
+  });
+
+  if (result.success) {
+    console.log("User has no outstanding debts!");
+  }
+}
+```
+

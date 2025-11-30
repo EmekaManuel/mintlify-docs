@@ -1,0 +1,182 @@
+---
+title: "React Examples"
+description: "React component examples for SentinelX404"
+---
+
+## Basic Authentication Component
+
+```typescript
+"use client";
+
+import { useState } from "react";
+import { X404Blacklist } from "sentinelx404/blacklist";
+import { getGeolocationData } from "sentinelx404/utils";
+import type { X404AuthResult } from "sentinelx404";
+
+export function AuthButton() {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<X404AuthResult | null>(null);
+
+  const handleAuth = async () => {
+    setLoading(true);
+    try {
+      const location = await getGeolocationData();
+      
+      const authResult = await X404Blacklist({
+        excluded_mints: ["scam_token_address"],
+        max_holdings: {},
+        geo_code: "false",
+        geo_code_locs: "",
+        coords: {
+          latitude: location.latitude,
+          longitude: location.longitude,
+        },
+      });
+
+      setResult(authResult);
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={handleAuth} disabled={loading}>
+        {loading ? "Authenticating..." : "Authenticate"}
+      </button>
+      {result && (
+        <div>
+          {result.success ? (
+            <p>✅ Authenticated! Token: {result.token}</p>
+          ) : (
+            <p>❌ Error: {result.error} - {result.message}</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Multiple Features Component
+
+```typescript
+"use client";
+
+import { useState } from "react";
+import {
+  X404Blacklist,
+  X404TimeLock,
+  X404Tier,
+} from "sentinelx404";
+import type { X404AuthResult } from "sentinelx404";
+
+export function MultiFeatureAuth() {
+  const [result, setResult] = useState<X404AuthResult | null>(null);
+
+  const handleBlacklist = async () => {
+    const result = await X404Blacklist({
+      excluded_mints: ["token_address"],
+      max_holdings: {},
+      geo_code: "false",
+      geo_code_locs: "",
+      coords: { latitude: null, longitude: null },
+    });
+    setResult(result);
+  };
+
+  const handleTimeLock = async () => {
+    const result = await X404TimeLock({
+      required_mint: "TOKEN_MINT",
+      mint_amount: "100000",
+      min_hold_duration_days: 30,
+      geo_code: "false",
+      geo_code_locs: "",
+      coords: { latitude: null, longitude: null },
+    });
+    setResult(result);
+  };
+
+  const handleTier = async () => {
+    const result = await X404Tier({
+      tier_config: {
+        bronze: { mint: "TOKEN", amount: "1000" },
+        silver: { mint: "TOKEN", amount: "10000" },
+        gold: { mint: "TOKEN", amount: "100000" },
+      },
+      geo_code: "false",
+      geo_code_locs: "",
+      coords: { latitude: null, longitude: null },
+    });
+    setResult(result);
+  };
+
+  return (
+    <div>
+      <button onClick={handleBlacklist}>Blacklist Auth</button>
+      <button onClick={handleTimeLock}>TimeLock Auth</button>
+      <button onClick={handleTier}>Tier Auth</button>
+      {result && (
+        <div>
+          {result.success ? (
+            <p>✅ Success! {result.tier && `Tier: ${result.tier}`}</p>
+          ) : (
+            <p>❌ Error: {result.error}</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Protected Route Component
+
+```typescript
+"use client";
+
+import { useEffect, useState } from "react";
+import { X404Blacklist } from "sentinelx404/blacklist";
+
+export function ProtectedContent() {
+  const [authenticated, setAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    // Check if token exists in localStorage
+    const token = localStorage.getItem("sjwt404_blacklist");
+    
+    if (token) {
+      // Verify token is still valid by attempting authentication
+      const result = await X404Blacklist({
+        excluded_mints: ["token_address"],
+        max_holdings: {},
+        geo_code: "false",
+        geo_code_locs: "",
+        coords: { latitude: null, longitude: null },
+      });
+      
+      setAuthenticated(result.success || result.alreadyAuthenticated || false);
+    }
+    
+    setLoading(false);
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!authenticated) {
+    return <div>Please authenticate to view this content.</div>;
+  }
+
+  return <div>Protected content here!</div>;
+}
+```
+

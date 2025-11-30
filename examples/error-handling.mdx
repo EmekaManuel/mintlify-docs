@@ -1,0 +1,195 @@
+---
+title: "Error Handling"
+description: "Best practices for handling errors in SentinelX404"
+---
+
+## Basic Error Handling
+
+```typescript
+import { X404Blacklist } from "sentinelx404/blacklist";
+import type { X404AuthResult } from "sentinelx404";
+
+const result: X404AuthResult = await X404Blacklist({
+  excluded_mints: ["token_address"],
+  max_holdings: {},
+  geo_code: "false",
+  geo_code_locs: "",
+  coords: { latitude: null, longitude: null },
+});
+
+if (!result.success) {
+  // Handle error
+  console.error(result.error, result.message);
+}
+```
+
+## Comprehensive Error Handling
+
+```typescript
+import { X404Blacklist } from "sentinelx404/blacklist";
+import type { X404AuthResult } from "sentinelx404";
+
+async function authenticateWithErrorHandling(): Promise<void> {
+  try {
+    const result: X404AuthResult = await X404Blacklist({
+      excluded_mints: ["token_address"],
+      max_holdings: {},
+      geo_code: "false",
+      geo_code_locs: "",
+      coords: { latitude: null, longitude: null },
+    });
+
+    if (!result.success) {
+      handleAuthError(result.error, result.message);
+      return;
+    }
+
+    // Success
+    console.log("Authenticated! Token:", result.token);
+  } catch (error) {
+    // Network or unexpected errors
+    console.error("Unexpected error:", error);
+  }
+}
+
+function handleAuthError(
+  error: X404AuthResult["error"],
+  message?: string
+): void {
+  switch (error) {
+    case "NONCE_ERROR":
+      console.error("Failed to get nonce. Please try again.");
+      break;
+    case "SIGNING_ERROR":
+      console.error("Failed to sign. Please check your wallet.");
+      break;
+    case "HOLDS_BANNED_TOKEN":
+      console.error("You hold a banned token. Access denied.");
+      break;
+    case "EXCEEDS_MAX_HOLDING":
+      console.error("You exceed the maximum holding limit.");
+      break;
+    case "WALLET_CANCELLED":
+      console.error("Wallet selection was cancelled.");
+      break;
+    case "LOCATION_ERROR":
+      console.error("Location access error. Please enable location.");
+      break;
+    case "LOCATION_DENIED":
+      console.error("Access denied for your location.");
+      break;
+    default:
+      console.error("Authentication failed:", message || error);
+  }
+}
+```
+
+## User-Friendly Error Messages
+
+```typescript
+import { X404Blacklist } from "sentinelx404/blacklist";
+import type { X404AuthResult } from "sentinelx404";
+
+function getErrorMessage(result: X404AuthResult): string {
+  if (result.success) {
+    return "Authentication successful!";
+  }
+
+  switch (result.error) {
+    case "HOLDS_BANNED_TOKEN":
+      return "You hold tokens that are not allowed. Please remove them and try again.";
+    case "EXCEEDS_MAX_HOLDING":
+      return "You exceed the maximum holding limit for this token.";
+    case "WALLET_CANCELLED":
+      return "Please connect your wallet to continue.";
+    case "LOCATION_DENIED":
+      return "Location access is required for this feature.";
+    case "NONCE_ERROR":
+      return "Network error. Please try again.";
+    default:
+      return result.message || "Authentication failed. Please try again.";
+  }
+}
+
+// Usage
+const result = await X404Blacklist({ /* config */ });
+const message = getErrorMessage(result);
+console.log(message);
+```
+
+## Retry Logic
+
+```typescript
+import { X404Blacklist } from "sentinelx404/blacklist";
+import type { X404AuthResult } from "sentinelx404";
+
+async function authenticateWithRetry(
+  maxRetries: number = 3
+): Promise<X404AuthResult> {
+  for (let i = 0; i < maxRetries; i++) {
+    const result = await X404Blacklist({
+      excluded_mints: ["token_address"],
+      max_holdings: {},
+      geo_code: "false",
+      geo_code_locs: "",
+      coords: { latitude: null, longitude: null },
+    });
+
+    if (result.success) {
+      return result;
+    }
+
+    // Don't retry for user errors
+    if (
+      result.error === "WALLET_CANCELLED" ||
+      result.error === "HOLDS_BANNED_TOKEN" ||
+      result.error === "EXCEEDS_MAX_HOLDING"
+    ) {
+      return result;
+    }
+
+    // Wait before retry
+    if (i < maxRetries - 1) {
+      await new Promise((resolve) => setTimeout(resolve, 1000 * (i + 1)));
+    }
+  }
+
+  return {
+    success: false,
+    error: "UNKNOWN_ERROR",
+    message: "Authentication failed after multiple attempts",
+  };
+}
+```
+
+## Error Logging
+
+```typescript
+import { X404Blacklist } from "sentinelx404/blacklist";
+import type { X404AuthResult } from "sentinelx404";
+
+async function authenticateWithLogging(): Promise<X404AuthResult> {
+  const result = await X404Blacklist({
+    excluded_mints: ["token_address"],
+    max_holdings: {},
+    geo_code: "false",
+    geo_code_locs: "",
+    coords: { latitude: null, longitude: null },
+  });
+
+  if (!result.success) {
+    // Log to error tracking service
+    console.error("Auth error:", {
+      error: result.error,
+      message: result.message,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Send to analytics
+    // analytics.track('auth_error', { error: result.error });
+  }
+
+  return result;
+}
+```
+

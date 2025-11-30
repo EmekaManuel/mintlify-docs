@@ -1,0 +1,83 @@
+---
+title: "x404-MultiToken"
+description: "Multi-token portfolio verification"
+---
+
+## Overview
+
+The **x404-MultiToken** feature verifies that a user holds multiple tokens in their portfolio. You can require ALL tokens or ANY token from a list.
+
+## Import
+
+```typescript
+import { X404MultiToken } from "sentinelx404/multitoken";
+```
+
+## Usage
+
+```typescript
+import { X404MultiToken } from "sentinelx404/multitoken";
+
+const result = await X404MultiToken({
+  required_tokens: [
+    { mint: "TOKEN_A", amount: "10000" },
+    { mint: "TOKEN_B", amount: "5000" },
+    { mint: "TOKEN_C", amount: "1000" },
+  ],
+  verification_mode: "ALL", // Must have ALL tokens (or "ANY" for any)
+  geo_code: "false",
+  geo_code_locs: "",
+  coords: { latitude: null, longitude: null },
+});
+
+if (result.success) {
+  console.log("Authenticated! Token:", result.token);
+}
+```
+
+## Configuration
+
+<ParamField body="required_tokens" type="Array<{ mint: string, amount: string }>" required>
+  Array of tokens the user must hold. Each token has a mint address and minimum amount.
+</ParamField>
+
+<ParamField body="verification_mode" type="'ALL' | 'ANY'" required>
+  - `"ALL"`: User must hold ALL tokens in the list
+  - `"ANY"`: User must hold at least ONE token from the list
+</ParamField>
+
+## Error Types
+
+<ErrorField name="INSUFFICIENT_TOKENS">
+  User doesn't meet the multi-token requirements based on verification_mode
+</ErrorField>
+
+## Example: ALL Mode
+
+```typescript
+// User must hold ALL three tokens
+const result = await X404MultiToken({
+  required_tokens: [
+    { mint: "TOKEN_A", amount: "10000" },
+    { mint: "TOKEN_B", amount: "5000" },
+    { mint: "TOKEN_C", amount: "1000" },
+  ],
+  verification_mode: "ALL",
+  // ... other config
+});
+```
+
+## Example: ANY Mode
+
+```typescript
+// User must hold at least ONE of these tokens
+const result = await X404MultiToken({
+  required_tokens: [
+    { mint: "TOKEN_A", amount: "10000" },
+    { mint: "TOKEN_B", amount: "5000" },
+  ],
+  verification_mode: "ANY",
+  // ... other config
+});
+```
+

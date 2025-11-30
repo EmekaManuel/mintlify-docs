@@ -1,0 +1,105 @@
+---
+title: "Result Types"
+description: "TypeScript result types for SentinelX404"
+---
+
+## X404AuthResult
+
+All authentication features return an `X404AuthResult`:
+
+```typescript
+interface X404AuthResult {
+  success: boolean;
+  alreadyAuthenticated?: boolean;
+  token?: string;
+  data?: unknown;
+  error?:
+    | "NONCE_ERROR"
+    | "SIGNING_ERROR"
+    | "LOCATION_ERROR"
+    | "LOCATION_DENIED"
+    | "HOLDS_BANNED_TOKEN"
+    | "EXCEEDS_MAX_HOLDING"
+    | "INSUFFICIENT_HOLD_DURATION"
+    | "INSUFFICIENT_TOKENS"
+    | "INSUFFICIENT_ACTIVITY"
+    | "HAS_DEBT"
+    | "WALLET_TOO_NEW"
+    | "WALLET_CANCELLED"
+    | "UNKNOWN_ERROR";
+  message?: string;
+  tier?: "bronze" | "silver" | "gold";
+}
+```
+
+## Field Descriptions
+
+<ResponseField name="success" type="boolean" required>
+  Whether authentication was successful
+</ResponseField>
+
+<ResponseField name="alreadyAuthenticated" type="boolean">
+  Whether user was already authenticated (token exists in localStorage)
+</ResponseField>
+
+<ResponseField name="token" type="string">
+  JWT token (if successful). Automatically stored in localStorage
+</ResponseField>
+
+<ResponseField name="data" type="unknown">
+  Additional data returned from the server
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Error type if authentication failed
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Human-readable error message
+</ResponseField>
+
+<ResponseField name="tier" type="'bronze' | 'silver' | 'gold'">
+  User's tier (only for X404Tier feature)
+</ResponseField>
+
+## Success Example
+
+```typescript
+{
+  success: true,
+  token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  alreadyAuthenticated: false
+}
+```
+
+## Error Example
+
+```typescript
+{
+  success: false,
+  error: "HOLDS_BANNED_TOKEN",
+  message: "Wallet holds excluded token: token_address"
+}
+```
+
+## Usage
+
+```typescript
+import type { X404AuthResult } from "sentinelx404";
+import { X404Blacklist } from "sentinelx404/blacklist";
+
+const result: X404AuthResult = await X404Blacklist({
+  excluded_mints: ["token_address"],
+  max_holdings: {},
+  geo_code: "false",
+  geo_code_locs: "",
+  coords: { latitude: null, longitude: null },
+});
+
+if (result.success) {
+  console.log("Token:", result.token);
+} else {
+  console.error("Error:", result.error, result.message);
+}
+```
+

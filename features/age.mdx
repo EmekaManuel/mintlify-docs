@@ -1,0 +1,71 @@
+---
+title: "x404-Age"
+description: "Wallet age verification"
+---
+
+## Overview
+
+The **x404-Age** feature verifies that a wallet has been active for a minimum amount of time. This helps filter out newly created wallets or bots.
+
+## Import
+
+```typescript
+import { X404Age } from "sentinelx404/age";
+```
+
+## Usage
+
+```typescript
+import { X404Age } from "sentinelx404/age";
+
+const result = await X404Age({
+  min_wallet_age_days: 90, // Wallet must be 90+ days old
+  min_first_transaction_days: 30, // First transaction 30+ days ago
+  geo_code: "false",
+  geo_code_locs: "",
+  coords: { latitude: null, longitude: null },
+});
+
+if (result.success) {
+  console.log("Authenticated! Token:", result.token);
+}
+```
+
+## Configuration
+
+<ParamField body="min_wallet_age_days" type="number" required>
+  Minimum age of the wallet in days (based on first transaction)
+</ParamField>
+
+<ParamField body="min_first_transaction_days" type="number" required>
+  Minimum days since the first transaction
+</ParamField>
+
+## Error Types
+
+<ErrorField name="WALLET_TOO_NEW">
+  Wallet doesn't meet the minimum age requirements
+</ErrorField>
+
+## Example
+
+```typescript
+"use client";
+
+import { X404Age } from "sentinelx404/age";
+
+export async function verifyEstablishedWallet() {
+  const result = await X404Age({
+    min_wallet_age_days: 180, // 6 months old
+    min_first_transaction_days: 90, // First transaction 3 months ago
+    geo_code: "false",
+    geo_code_locs: "",
+    coords: { latitude: null, longitude: null },
+  });
+
+  if (result.success) {
+    console.log("User has an established wallet!");
+  }
+}
+```
+

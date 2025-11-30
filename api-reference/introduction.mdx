@@ -1,33 +1,174 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "API Introduction"
+description: "Overview of the SentinelX404 API"
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Base URL
 
-## Welcome
+All API endpoints are hosted at:
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+```
+https://sentinelx404.onrender.com/x404_auth
+```
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+## Authentication Flow
 
-## Authentication
+All endpoints follow the same authentication pattern:
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+<Steps>
+  <Step title="Request Nonce">
+    Client makes a GET request to the endpoint. Server returns `X-404-Nonce` and `X-404-Mechanism` headers.
+  </Step>
+  <Step title="Sign Challenge">
+    Client builds payload: `CHALLENGE::${nonce}::${path}::${feature}` and signs it with the user's wallet.
+  </Step>
+  <Step title="Send Request">
+    Client sends GET request with headers:
+    - `X-404-Nonce`: Nonce from step 1
+    - `X-404-Signature`: Base58-encoded signature
+    - `X-404-Addr`: User's public key
+    - `X-404-Feature`: Feature name
+    - Feature-specific headers
+  </Step>
+  <Step title="Receive Token">
+    Server verifies signature and performs feature-specific checks. Returns JWT token if successful.
+  </Step>
+</Steps>
+
+## Common Headers
+
+All authenticated requests include:
+
+<ParamField header="X-404-Nonce" type="string" required>
+  Nonce received from initial request
+</ParamField>
+
+<ParamField header="X-404-Signature" type="string" required>
+  Base58-encoded signature of the challenge payload
+</ParamField>
+
+<ParamField header="X-404-Addr" type="string" required>
+  User's Solana public key (base58-encoded)
+</ParamField>
+
+<ParamField header="X-404-Feature" type="string" required>
+  Feature name: `"blacklist"`, `"timelock"`, `"multitoken"`, `"activity"`, `"tier"`, `"nodebt"`, or `"age"`
+</ParamField>
+
+<ParamField header="x-jwt" type="string" required={false}>
+  JWT token from previous authentication (for re-authentication)
+</ParamField>
+
+## Response Format
+
+### Success Response
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+{
+  "success": true,
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "publicKey": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+  "feature": "blacklist"
+}
 ```
+
+### Error Response
+
+```json
+{
+  "error": "ERROR_TYPE",
+  "message": "Human-readable error message",
+  "status": "locerror" // Optional, for location errors
+}
+```
+
+## Status Codes
+
+<ResponseField name="200" type="number">
+  Success - Authentication successful, JWT token returned
+</ResponseField>
+
+<ResponseField name="401" type="number">
+  Unauthorized - Invalid signature, expired token, or location denied
+</ResponseField>
+
+<ResponseField name="403" type="number">
+  Forbidden - User doesn't meet requirements (e.g., exceeds max holdings)
+</ResponseField>
+
+<ResponseField name="500" type="number">
+  Server Error - Feature-specific failure or location error
+</ResponseField>
+
+## JWT Token Verification
+
+For subsequent requests, clients can send the JWT token in the `x-jwt` header:
+
+```http
+GET /x404_auth/blacklist
+x-jwt: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+The server will:
+1. Verify JWT signature
+2. Check expiration
+3. Verify token is for the correct feature
+4. Return `200` if valid, `401` if invalid
+
+## Endpoints
+
+<Card
+  title="Blacklist"
+  icon="ban"
+  href="/api-reference/endpoints/blacklist"
+>
+  Exclusion-based authentication
+</Card>
+
+<Card
+  title="TimeLock"
+  icon="clock"
+  href="/api-reference/endpoints/timelock"
+>
+  Time-based token holding verification
+</Card>
+
+<Card
+  title="MultiToken"
+  icon="layer-group"
+  href="/api-reference/endpoints/multitoken"
+>
+  Multi-token portfolio verification
+</Card>
+
+<Card
+  title="Activity"
+  icon="chart-line"
+  href="/api-reference/endpoints/activity"
+>
+  Transaction history verification
+</Card>
+
+<Card
+  title="Tier"
+  icon="trophy"
+  href="/api-reference/endpoints/tier"
+>
+  Tiered access levels
+</Card>
+
+<Card
+  title="NoDebt"
+  icon="wallet"
+  href="/api-reference/endpoints/nodebt"
+>
+  Negative balance verification
+</Card>
+
+<Card
+  title="Age"
+  icon="calendar"
+  href="/api-reference/endpoints/age"
+>
+  Wallet age verification
+</Card>

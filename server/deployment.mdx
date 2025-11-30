@@ -1,0 +1,196 @@
+---
+title: "Server Deployment"
+description: "Deploy the SentinelX404 server to production"
+---
+
+## Production Checklist
+
+Before deploying to production:
+
+<Checklist>
+  <ChecklistItem>
+    Use a dedicated Solana RPC provider (Helius, QuickNode, etc.)
+  </ChecklistItem>
+  <ChecklistItem>
+    Set a secure JWT_SECRET (generate with crypto.randomBytes)
+  </ChecklistItem>
+  <ChecklistItem>
+    Configure CORS to allow only your frontend domain
+  </ChecklistItem>
+  <ChecklistItem>
+    Set up rate limiting to prevent abuse
+  </ChecklistItem>
+  <ChecklistItem>
+    Add logging and error tracking (Sentry, LogRocket, etc.)
+  </ChecklistItem>
+  <ChecklistItem>
+    Set up monitoring and alerts
+  </ChecklistItem>
+</Checklist>
+
+## Environment Variables
+
+Set these environment variables in your production environment:
+
+```env
+PORT=3000
+JWT_SECRET=<secure-random-string>
+JWT_EXPIRY=30d
+SOLANA_RPC_URL=<your-dedicated-rpc-url>
+NODE_ENV=production
+```
+
+## Generate Secure JWT Secret
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+## Deployment Options
+
+### Render
+
+1. Connect your repository to Render
+2. Set environment variables
+3. Deploy
+
+The `render.yaml` file in the repository provides a configuration example.
+
+### Railway
+
+1. Create a new project on Railway
+2. Connect your repository
+3. Set environment variables
+4. Deploy
+
+### Heroku
+
+```bash
+heroku create your-app-name
+heroku config:set JWT_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+heroku config:set SOLANA_RPC_URL=your-rpc-url
+git push heroku main
+```
+
+### Docker
+
+Create a `Dockerfile`:
+
+```dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --only=production
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
+```
+
+Build and run:
+
+```bash
+docker build -t sentinelx404-server .
+docker run -p 3000:3000 \
+  -e JWT_SECRET=your-secret \
+  -e SOLANA_RPC_URL=your-rpc-url \
+  sentinelx404-server
+```
+
+## CORS Configuration
+
+Update CORS settings in `server/index.ts`:
+
+```typescript
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "https://yourdomain.com",
+    credentials: true,
+    exposedHeaders: ["X-404-Nonce", "X-404-Mechanism"],
+  })
+);
+```
+
+## Rate Limiting
+
+Add rate limiting middleware:
+
+```bash
+npm install express-rate-limit
+```
+
+```typescript
+import rateLimit from "express-rate-limit";
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+});
+
+app.use("/x404_auth", limiter);
+```
+
+## Monitoring
+
+### Health Check Endpoint
+
+The server includes a health check endpoint:
+
+```bash
+curl https://your-server.com/health
+```
+
+### Logging
+
+Add structured logging:
+
+```bash
+npm install winston
+```
+
+```typescript
+import winston from "winston";
+
+const logger = winston.createLogger({
+  level: "info",
+  format: winston.format.json(),
+  transports: [
+    new winston.transports.File({ filename: "error.log", level: "error" }),
+    new winston.transports.File({ filename: "combined.log" }),
+  ],
+});
+
+// Use in routes
+logger.info("Authentication successful", { publicKey, feature });
+```
+
+## Security Best Practices
+
+1. **Use HTTPS**: Always use HTTPS in production
+2. **Secure Headers**: Add security headers middleware
+3. **Input Validation**: Validate all input parameters
+4. **Error Handling**: Don't expose sensitive error details
+5. **Regular Updates**: Keep dependencies updated
+
+## Next Steps
+
+<Card
+  title="Server Setup"
+  icon="server"
+  href="/server/setup"
+>
+  Review server setup guide
+</Card>
+
+<Card
+  title="API Reference"
+  icon="book"
+  href="/api-reference/introduction"
+>
+  View complete API documentation
+</Card>
+

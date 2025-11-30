@@ -1,0 +1,145 @@
+---
+title: "Installation"
+description: "Install and configure SentinelX404"
+---
+
+## Package Installation
+
+Install SentinelX404 using your preferred package manager:
+
+<CodeGroup>
+```bash npm
+npm install sentinelx404
+```
+
+```bash yarn
+yarn add sentinelx404
+```
+
+```bash bun
+bun add sentinelx404
+```
+
+```bash pnpm
+pnpm add sentinelx404
+```
+</CodeGroup>
+
+## Framework-Specific Setup
+
+### Next.js
+
+See the [Next.js Setup Guide](/nextjs-setup) for detailed configuration.
+
+### React (Create React App)
+
+No additional configuration needed. The package works out of the box.
+
+### Vue.js
+
+No additional configuration needed. The package works out of the box.
+
+### Vanilla JavaScript
+
+The package works in any JavaScript environment that supports ES modules.
+
+## Verify Installation
+
+After installation, verify it works:
+
+```typescript
+import { X404Blacklist } from "sentinelx404/blacklist";
+
+console.log(typeof X404Blacklist); // Should log "function"
+```
+
+## TypeScript Support
+
+The package includes full TypeScript definitions. If you're using TypeScript, you'll get:
+
+- Full IntelliSense support
+- Type checking
+- Auto-completion
+
+```typescript
+import type { X404BlacklistConfig, X404AuthResult } from "sentinelx404";
+
+const config: X404BlacklistConfig = {
+  excluded_mints: ["token_address"],
+  // TypeScript will autocomplete and validate all fields
+};
+```
+
+## Package Structure
+
+The package exports:
+
+- **Features**: Individual authentication features
+- **Utilities**: Helper functions for wallet detection, geolocation, etc.
+- **Types**: TypeScript type definitions
+
+```typescript
+// Import features
+import { X404Blacklist } from "sentinelx404/blacklist";
+
+// Import utilities
+import { detectWallets, getGeolocationData } from "sentinelx404/utils";
+
+// Import types
+import type { X404AuthResult } from "sentinelx404";
+```
+
+## Troubleshooting
+
+### Module Not Found Errors
+
+If you see module resolution errors:
+
+1. **Clear cache and reinstall:**
+   ```bash
+   rm -rf node_modules package-lock.json
+   npm install
+   ```
+
+2. **For Next.js:** Make sure `transpilePackages` is configured (see [Next.js Setup](/nextjs-setup))
+
+3. **Restart your dev server**
+
+### Type Errors
+
+If TypeScript can't find types:
+
+1. Make sure `node_modules/sentinelx404` exists
+2. Check that your `tsconfig.json` includes the package:
+   ```json
+   {
+     "include": ["**/*", "node_modules/sentinelx404/**/*"]
+   }
+   ```
+
+### Build Errors
+
+If you encounter build errors:
+
+1. Ensure you're using a compatible Node.js version (18+)
+2. Check that all dependencies are installed
+3. Clear build cache and rebuild
+
+## Next Steps
+
+<Card
+  title="Next.js Setup"
+  icon="nextjs"
+  href="/nextjs-setup"
+>
+  Configure Next.js for SentinelX404
+</Card>
+
+<Card
+  title="Quick Start"
+  icon="rocket"
+  href="/quickstart"
+>
+  Get started with your first authentication
+</Card>
+

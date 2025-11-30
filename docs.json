@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "SentinelX404",
   "colors": {
     "primary": "#16A34A",
     "light": "#07C983",
@@ -15,54 +15,69 @@
         "groups": [
           {
             "group": "Getting started",
+            "pages": ["index", "quickstart", "installation", "nextjs-setup"]
+          },
+          {
+            "group": "Features",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "features/blacklist",
+              "features/timelock",
+              "features/multitoken",
+              "features/activity",
+              "features/tier",
+              "features/nodebt",
+              "features/age"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Utilities",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "utilities/wallet-detection",
+              "utilities/geolocation",
+              "utilities/wallet-modal"
             ]
           },
           {
-            "group": "Writing content",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
+            "group": "Server",
+            "pages": ["server/setup", "server/deployment"]
           },
           {
-            "group": "AI tools",
+            "group": "Examples",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "examples/react",
+              "examples/typescript",
+              "examples/error-handling"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Overview",
             "pages": [
-              "api-reference/introduction"
+              "api-reference/introduction",
+              "api-reference/authentication"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Endpoints",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/endpoints/blacklist",
+              "api-reference/endpoints/timelock",
+              "api-reference/endpoints/multitoken",
+              "api-reference/endpoints/activity",
+              "api-reference/endpoints/tier",
+              "api-reference/endpoints/nodebt",
+              "api-reference/endpoints/age"
+            ]
+          },
+          {
+            "group": "Types",
+            "pages": [
+              "api-reference/types/configs",
+              "api-reference/types/results"
             ]
           }
         ]
@@ -71,14 +86,14 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "GitHub",
+          "href": "https://github.com/sentinelinfra/sentinelx404",
+          "icon": "github"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "NPM",
+          "href": "https://www.npmjs.com/package/sentinelx404",
+          "icon": "npm"
         }
       ]
     }
@@ -91,32 +106,30 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:support@sentinelx404.com"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Get Started",
+      "href": "/quickstart"
     }
   },
   "contextual": {
     "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "github": "https://github.com/sentinelinfra/sentinelx404"
     }
   }
 }

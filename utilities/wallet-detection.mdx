@@ -1,0 +1,70 @@
+---
+title: "Wallet Detection"
+description: "Detect available Solana wallets"
+---
+
+## Overview
+
+The `detectWallets()` utility function detects which Solana wallets are installed in the user's browser.
+
+## Import
+
+```typescript
+import { detectWallets } from "sentinelx404/utils";
+```
+
+## Usage
+
+```typescript
+import { detectWallets } from "sentinelx404/utils";
+
+const wallets = detectWallets();
+console.log(wallets); // ["phantom", "solflare", "backpack"]
+```
+
+## Return Value
+
+Returns an array of wallet names that are detected:
+
+- `"phantom"` - Phantom wallet
+- `"solflare"` - Solflare wallet
+- `"backpack"` - Backpack wallet
+
+## Example
+
+```typescript
+"use client";
+
+import { detectWallets } from "sentinelx404/utils";
+
+export function WalletList() {
+  const wallets = detectWallets();
+  
+  return (
+    <div>
+      <h3>Available Wallets:</h3>
+      <ul>
+        {wallets.map(wallet => (
+          <li key={wallet}>{wallet}</li>
+        ))}
+      </ul>
+      {wallets.length === 0 && (
+        <p>No wallets detected. Please install a Solana wallet.</p>
+      )}
+    </div>
+  );
+}
+```
+
+## Implementation Details
+
+The function checks for wallet objects in the `window` object:
+
+- `window.phantom?.solana` - Phantom wallet
+- `window.solflare` - Solflare wallet
+- `window.backpack` - Backpack wallet
+
+<Note>
+This function only works in browser environments. It will return an empty array in server-side contexts.
+</Note>
+

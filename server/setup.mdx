@@ -1,0 +1,146 @@
+---
+title: "Server Setup"
+description: "Set up and run the SentinelX404 authentication server"
+---
+
+## Overview
+
+The SentinelX404 server handles authentication requests and verifies wallet signatures and token holdings. This guide will help you set up and run your own server instance.
+
+## Quick Start
+
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure Environment Variables
+
+Create a `.env` file in the project root:
+
+```env
+PORT=3000
+JWT_SECRET=your-secret-key-change-in-production
+JWT_EXPIRY=30d
+SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
+```
+
+<Warning>
+Change `JWT_SECRET` to a secure random string in production!
+</Warning>
+
+### 3. Start the Server
+
+```bash
+npm start
+```
+
+Or for development with auto-reload:
+
+```bash
+npm run dev
+```
+
+The server will start on `http://localhost:3000`
+
+## Environment Variables
+
+<ParamField body="PORT" type="number" required={false}>
+  Port number for the server (default: 3000)
+</ParamField>
+
+<ParamField body="JWT_SECRET" type="string" required>
+  Secret key for signing JWT tokens. Generate a secure random string for production.
+</ParamField>
+
+<ParamField body="JWT_EXPIRY" type="string" required={false}>
+  JWT token expiration time (default: "30d")
+</ParamField>
+
+<ParamField body="SOLANA_RPC_URL" type="string" required>
+  Solana RPC endpoint URL. Use a dedicated provider for production.
+</ParamField>
+
+## Generate Secure JWT Secret
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+## Testing the Server
+
+### Health Check
+
+```bash
+curl http://localhost:3000/health
+```
+
+Expected response:
+
+```json
+{
+  "status": "ok",
+  "service": "x404-auth-server"
+}
+```
+
+### Test Nonce Generation
+
+```bash
+curl http://localhost:3000/x404_auth/blacklist
+```
+
+You should receive a response with `X-404-Nonce` header.
+
+## Updating Client Code
+
+To use your local server instead of the hosted one, update the URLs in the feature files:
+
+```typescript
+// Change from:
+const url = "https://sentinelx404.onrender.com/x404_auth/blacklist";
+
+// To:
+const url = "http://localhost:3000/x404_auth/blacklist";
+```
+
+## Server Structure
+
+```
+server/
+├── index.ts          # Main server file
+├── middleware/
+│   └── auth.ts       # Authentication middleware
+├── routes/
+│   ├── blacklist.ts  # Blacklist route handler
+│   ├── timelock.ts   # TimeLock route handler
+│   └── ...           # Other feature routes
+└── utils/
+    ├── solana.ts     # Solana RPC utilities
+    ├── nonce.ts      # Nonce generation
+    └── geolocation.ts # Geolocation utilities
+```
+
+## API Endpoints
+
+All endpoints are available at `/x404_auth/{feature}`:
+
+- `/x404_auth/blacklist` - Blacklist feature
+- `/x404_auth/timelock` - TimeLock feature
+- `/x404_auth/multitoken` - MultiToken feature
+- `/x404_auth/activity` - Activity feature
+- `/x404_auth/tier` - Tier feature
+- `/x404_auth/nodebt` - NoDebt feature
+- `/x404_auth/age` - Age feature
+
+## Next Steps
+
+<Card
+  title="Deployment Guide"
+  icon="rocket"
+  href="/server/deployment"
+>
+  Learn how to deploy your server to production
+</Card>
+

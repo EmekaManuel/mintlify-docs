@@ -1,0 +1,111 @@
+---
+title: "Geolocation"
+description: "Get user's geolocation data"
+---
+
+## Overview
+
+The `getGeolocationData()` utility function retrieves the user's current geolocation coordinates.
+
+## Import
+
+```typescript
+import { getGeolocationData } from "sentinelx404/utils";
+```
+
+## Usage
+
+```typescript
+import { getGeolocationData } from "sentinelx404/utils";
+
+const location = await getGeolocationData();
+console.log(location);
+// {
+//   latitude: 37.7749,
+//   longitude: -122.4194,
+//   error: null,
+//   isFetching: false
+// }
+```
+
+## Return Value
+
+<ResponseField name="latitude" type="number | null">
+  User's latitude coordinate
+</ResponseField>
+
+<ResponseField name="longitude" type="number | null">
+  User's longitude coordinate
+</ResponseField>
+
+<ResponseField name="error" type="string | null">
+  Error message if geolocation access failed or was denied
+</ResponseField>
+
+<ResponseField name="isFetching" type="boolean">
+  Whether geolocation is currently being fetched
+</ResponseField>
+
+## Example
+
+```typescript
+"use client";
+
+import { getGeolocationData } from "sentinelx404/utils";
+import { X404Blacklist } from "sentinelx404/blacklist";
+
+export async function authenticateWithLocation() {
+  // Get user's location
+  const location = await getGeolocationData();
+  
+  if (location.error) {
+    console.error("Geolocation error:", location.error);
+    // Continue without location or handle error
+  }
+  
+  // Use location in authentication
+  const result = await X404Blacklist({
+    excluded_mints: ["token_address"],
+    max_holdings: {},
+    geo_code: location.latitude ? "true" : "false",
+    geo_code_locs: "",
+    coords: {
+      latitude: location.latitude,
+      longitude: location.longitude,
+    },
+  });
+  
+  return result;
+}
+```
+
+## Error Handling
+
+The function handles various geolocation scenarios:
+
+- **Permission denied**: User denied location access
+- **Timeout**: Location request timed out
+- **Not available**: Geolocation API not available
+- **Position unavailable**: Could not determine position
+
+```typescript
+const location = await getGeolocationData();
+
+if (location.error) {
+  switch (location.error) {
+    case "User denied Geolocation":
+      console.log("User denied location access");
+      break;
+    case "Position unavailable":
+      console.log("Could not determine position");
+      break;
+    default:
+      console.log("Geolocation error:", location.error);
+  }
+}
+```
+
+<Warning>
+The browser will prompt the user for location permission on first use. Make sure to handle cases where the user denies permission.
+</Warning>
+
