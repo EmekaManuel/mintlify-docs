@@ -1,0 +1,57 @@
+---
+title: "Java SE 13"
+description: "Features and improvements in Java SE 13"
+---
+
+## Java SE 13
+
+Released: **September 17, 2019**
+
+Java SE 13 introduced several preview features and improvements.
+
+## Key Features
+
+### Text Blocks (Preview)
+
+Multi-line string literals that improve readability:
+
+```java
+String html = """
+    <html>
+        <body>
+            <p>Hello, World</p>
+        </body>
+    </html>
+    """;
+```
+
+### Switch Expressions (Preview)
+
+Enhanced switch statements with expression syntax:
+
+```java
+int numLetters = switch (day) {
+    case MONDAY, FRIDAY, SUNDAY -> 6;
+    case TUESDAY -> 7;
+    case THURSDAY, SATURDAY -> 8;
+    case WEDNESDAY -> 9;
+};
+```
+
+### Reimplement the Legacy Socket API
+
+The underlying implementation of the `java.net.Socket` and `java.net.ServerSocket` APIs has been replaced with a simpler and more maintainable implementation.
+
+### Dynamic CDS Archives
+
+Application Class-Data Sharing (CDS) archives can be created dynamically.
+
+## Deprecations and Removals
+
+- Removed `java.security.acl` package
+- Removed `java.security.Certificate` interface
+
+## Migration Notes
+
+- Text Blocks and Switch Expressions were preview features and required the `--enable-preview` flag
+- Consider migrating to Java 17 LTS for production use

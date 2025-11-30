@@ -111,8 +111,7 @@
     ],
     "primary": {
       "type": "button",
-      "label": "Get Started",
-      "href": "/quickstart"
+      "label": "Get Started"
     }
   },
   "contextual": {

@@ -1,0 +1,75 @@
+---
+title: "Java SE 14"
+description: "Features and improvements in Java SE 14"
+---
+
+## Java SE 14
+
+Released: **March 17, 2020**
+
+Java SE 14 brought several features to production and introduced new preview features.
+
+## Key Features
+
+### Switch Expressions (Standard)
+
+Switch expressions became a standard feature:
+
+```java
+String result = switch (status) {
+    case "OK" -> "Success";
+    case "ERROR" -> "Failure";
+    default -> "Unknown";
+};
+```
+
+### Pattern Matching for instanceof (Preview)
+
+Simplified type checking and casting:
+
+```java
+if (obj instanceof String s) {
+    // s is automatically cast to String
+    System.out.println(s.length());
+}
+```
+
+### Records (Preview)
+
+Concise classes for immutable data:
+
+```java
+public record Point(int x, int y) {
+    // Automatically generates:
+    // - Constructor
+    // - Getters (x(), y())
+    // - equals(), hashCode(), toString()
+}
+```
+
+### Text Blocks (Second Preview)
+
+Improved text blocks with escape sequences:
+
+```java
+String json = """
+    {
+        "name": "%s",
+        "age": %d
+    }
+    """.formatted("John", 30);
+```
+
+### Helpful NullPointerExceptions
+
+More informative error messages when encountering null pointer exceptions.
+
+## JVM Improvements
+
+- Parallel Full GC for G1
+- JFR Event Streaming
+
+## Migration Notes
+
+- Switch expressions no longer require `--enable-preview`
+- Records and Pattern Matching for instanceof remain preview features
